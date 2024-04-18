@@ -13,10 +13,8 @@ CREATE TABLE "permgroups" (
 CREATE TABLE "books" (
   "id" bigserial PRIMARY KEY,
   "author_id" bigint NOT NULL,
-  "published" bool NOT NULL DEFAULT false,
   "title" text NOT NULL,
   "subtitle" text,
-  "ch_count" smallint NOT NULL DEFAULT 0,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
@@ -25,16 +23,6 @@ CREATE TABLE "published_books" (
   "author_id" bigint NOT NULL,
   "is_published" bool NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL DEFAULT (now())
-);
-
-CREATE TABLE "tags" (
-  "id" bigserial PRIMARY KEY,
-  "name" varchar(30) NOT NULL
-);
-
-CREATE TABLE "book_tags" (
-  "book_id" bigint NOT NULL,
-  "tag_id" bigint NOT NULL
 );
 
 CREATE TABLE "chapters" (
@@ -62,7 +50,6 @@ CREATE TABLE "author_levels" (
 
 CREATE TABLE "author_titles" (
   "id" smallserial PRIMARY KEY,
-  "genre_id" smallint NOT NULL,
   "title" text NOT NULL
 );
 
@@ -83,19 +70,20 @@ CREATE TABLE "users" (
   "favorite_author" text,
   "favorite_book" text,
   "last_visited" timestamptz NOT NULL DEFAULT (now()),
-  "created_at" timestamptz NOT NULL DEFAULT (now()),
-  "author_type_id" smallint
+  "created_at" timestamptz NOT NULL DEFAULT (now())
+);
+
+CREATE TABLE "quotes" (
+  "id" bigserial PRIMARY KEY,
+  "user_id" bigint NOT NULL,
+  "quote" text,
+  "author" text,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "genres" (
   "id" smallserial PRIMARY KEY,
   "genre_name" varchar(50) NOT NULL
-);
-
-CREATE TABLE "author_types" (
-  "id" smallserial PRIMARY KEY,
-  "genre_id" smallint NOT NULL,
-  "type_name" text NOT NULL
 );
 
 CREATE TABLE "follows" (
@@ -108,6 +96,7 @@ CREATE TABLE "follows" (
 CREATE TABLE "characters" (
   "id" bigserial PRIMARY KEY,
   "book_id" bigint NOT NULL,
+  "name" text NOT NULL,
   "description" text,
   "age" text,
   "gender" text,
@@ -160,6 +149,7 @@ CREATE TABLE "characters" (
 CREATE TABLE "species" (
   "id" bigserial PRIMARY KEY,
   "book_id" bigint NOT NULL,
+  "name" text NOT NULL,
   "description" text,
   "lifespan" text,
   "height" text,
@@ -185,6 +175,7 @@ CREATE TABLE "species" (
 CREATE TABLE "items" (
   "id" bigserial PRIMARY KEY,
   "book_id" bigint NOT NULL,
+  "name" text NOT NULL,
   "description" text,
   "purpose" text,
   "special_abilities_properties" text,
@@ -215,8 +206,6 @@ CREATE INDEX ON "permgroups" ("name");
 
 CREATE UNIQUE INDEX ON "published_books" ("book_id", "author_id");
 
-CREATE UNIQUE INDEX ON "book_tags" ("book_id", "tag_id");
-
 CREATE INDEX ON "users" ("email");
 
 CREATE UNIQUE INDEX ON "follows" ("follower_id", "following_id");
@@ -227,13 +216,7 @@ ALTER TABLE "published_books" ADD FOREIGN KEY ("author_id") REFERENCES "users" (
 
 ALTER TABLE "published_books" ADD FOREIGN KEY ("book_id") REFERENCES "books" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "book_tags" ADD FOREIGN KEY ("book_id") REFERENCES "books" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "book_tags" ADD FOREIGN KEY ("tag_id") REFERENCES "tags" ("id") ON DELETE CASCADE;
-
 ALTER TABLE "chapters" ADD FOREIGN KEY ("book_id") REFERENCES "books" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "author_titles" ADD FOREIGN KEY ("genre_id") REFERENCES "genres" ("id");
 
 ALTER TABLE "users" ADD FOREIGN KEY ("gender_id") REFERENCES "genders" ("id");
 
@@ -245,7 +228,7 @@ ALTER TABLE "users" ADD FOREIGN KEY ("title_id") REFERENCES "author_titles" ("id
 
 ALTER TABLE "users" ADD FOREIGN KEY ("permgroup_id") REFERENCES "permgroups" ("id");
 
-ALTER TABLE "users" ADD FOREIGN KEY ("author_type_id") REFERENCES "author_types" ("id");
+ALTER TABLE "quotes" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "follows" ADD FOREIGN KEY ("follower_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
